@@ -1,0 +1,131 @@
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <title>Battle of Github Stars</title>
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body {
+                background-color: #EEEEEE;
+            }
+            #title {
+                text-align: center;
+                margin: 50px;
+                margin-bottom: 30px;
+            }
+            #repo-form {
+                margin: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="row" id="title">
+            <div class="col-lg-12">
+                <h1>Enter the Github repository URLs that you want to compare.</h1>
+                <h3>https://github.com/[USER]/[REPOSITORY]</h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-3"></div>
+            <div class="col-lg-6">
+                <form role="form" id="repo-form">
+                    <div class="form-group">
+                        <label for="repo_1">Repository 1:</label>
+                        <input type="text" class="form-control" id="repo_1">
+                    </div>
+                    <div class="form-group">
+                        <label for="repo_2">Repository 2:</label>
+                        <input type="text" class="form-control" id="repo_2">
+                    </div>
+                    <button type="submit" class="btn btn-default">Compare!</button>
+                </form>
+            </div>
+            <div class="col-lg-3"></div>
+        </div>
+        
+        <table id="results" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Repo Name</th>
+                    <th>Description</th>
+                    <th>Stars</th>
+                    <th>Forks</th>
+                    <th>Watchers</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="repo-1-results"></tr>
+                <tr id="repo-2-results"></tr>
+            </tbody>
+        </table>
+
+
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.js"></script>
+        <script>
+            var GITHUB_API_URL = "https://api.github.com/repos/";
+
+            function constructURL(github_url){
+                var user_repo = github_url.replace('https://github.com/', '')
+                return GITHUB_API_URL + user_repo;
+            }
+
+            function populateResults(data, table_row){
+                $(table_row).html('')
+                var repo_name = data.full_name;
+                var description = data.description;
+                var stars = data.stargazers_count;
+                var forks = data.forks_count;
+                var watchers = data.watchers_count;
+                $(table_row).append(
+                    $('<td>').text(repo_name),
+                    $('<td>').text(description),
+                    $('<td>').text(stars),
+                    $('<td>').text(forks),
+                    $('<td>').text(watchers)
+                );
+            }
+
+            function showError(error_message, table_row){
+                var error_text = '-';
+                $(table_row).html('')
+                $(table_row).append(
+                    $('<td>').text(error_message),
+                    $('<td>').text(error_text),
+                    $('<td>').text(error_text),
+                    $('<td>').text(error_text),
+                    $('<td>').text(error_text)
+                );
+            }
+
+
+            $("#repo-form").submit(function() {
+                var url1 = $("#repo_1").val();
+                var url2 = $("#repo_2").val();
+                $.ajax({
+                    type: 'GET',
+                    url: constructURL(url1), 
+                    success: function(response) {
+                        populateResults(response, "#repo-1-results");
+                    },
+                    error: function(xhr, ajaxOptions, thrownError){
+                        showError("Error", "#repo-1-results");
+                    }
+                });
+                $.ajax({
+                    type: 'GET',
+                    url: constructURL(url2), 
+                    success: function(response) {
+                        populateResults(response, "#repo-2-results");
+                    },
+                    error: function(xhr, ajaxOptions, thrownError){
+                        showError("Error", "#repo-2-results");
+                    }
+                });
+                return false;
+            });
+
+        </script>
+    </body>
+</html>
